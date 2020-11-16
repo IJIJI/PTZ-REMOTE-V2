@@ -79,29 +79,25 @@ void setup(void) {
 
 void loop() {
 
-  if (digitalRead(button1Pin) == LOW){
-    if (currentCam != 0){
-      currentCam = 0;
-      updateScreen();
-    }
+  if (digitalRead(button1Pin) == LOW && currentCam != 0){
+    currentCam = 0;
+    updateScreen();
+
   }
-  else if (digitalRead(button2Pin) == LOW){
-    if (currentCam != 1){
-      currentCam = 1;
-      updateScreen();
-    }
+  else if (digitalRead(button2Pin) == LOW && currentCam != 1){
+    currentCam = 1;
+    updateScreen();
+
   }
-  else if (digitalRead(button3Pin) == LOW){
-    if (currentCam != 2){
-      currentCam = 2;
-      updateScreen();
-    }
+  else if (digitalRead(button3Pin) == LOW && currentCam != 2){
+    currentCam = 2;
+    updateScreen();
+
   }
-  else if (digitalRead(button4Pin) == LOW){
-    if (currentCam != 3){
-      currentCam = 3;
-      updateScreen();
-    }
+  else if (digitalRead(button4Pin) == LOW && currentCam != 3){
+    currentCam = 3;
+    updateScreen();
+
   }
 
 }
@@ -161,24 +157,24 @@ void updateScreen() {
     tft.setCursor(54, 115);
     tft.setTextSize(4);
     tft.setTextColor(ST7735_WHITE);
-    tft.print(currentCam + 1);
+    tft.print(data[currentCam].camNum);
   }
   else if (data[currentCam].tally == preview){
     tft.fillRect(0, tallyPos, 128, 2, ST7735_WHITE);
     tft.fillRect(0, tallyPos + 2, 128, 160-(tallyPos + 2), ST7735_GREEN);
 
-    tft.setCursor(56, 115);
-    tft.setTextSize(3);
+    tft.setCursor(54, 115);
+    tft.setTextSize(4);
     tft.setTextColor(ST7735_BLACK);
-    tft.print(currentCam + 1);
+    tft.print(data[currentCam].camNum);
   }
   else if (data[currentCam].tally == program){
     tft.fillRect(0, tallyPos, 128, 2, ST7735_WHITE);
     tft.fillRect(0, tallyPos + 2, 128, 160-(tallyPos + 2), ST7735_RED);
 
-    tft.setCursor(56, 115);
-    tft.setTextSize(3);
+    tft.setCursor(54, 115);
+    tft.setTextSize(4);
     tft.setTextColor(ST7735_BLACK);
-    tft.print(currentCam + 1);
+    tft.print(data[currentCam].camNum);
   }
 }
