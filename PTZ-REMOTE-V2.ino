@@ -5,18 +5,33 @@
 #include <SPI.h>
 
 
-#define button1Pin 7
-#define button2Pin 6
-#define button3Pin 5
-#define button4Pin 4
+#define button1Pin 21
+#define button2Pin 22
+#define button3Pin 23
+#define button4Pin 24
 
 
-#define TFT_CS    10
-#define TFT_RST   8
-#define TFT_DC    9
+// #define TFT_CS    10
+// #define TFT_RST   8
+// #define TFT_DC    9
 
-#define TFT_SCLK 13
-#define TFT_MOSI 11
+// #define TFT_SCLK 13
+// #define TFT_MOSI 11
+
+// #define TFT_CS    PA3
+// #define TFT_RST   PA2
+// #define TFT_DC    PA1
+
+// #define TFT_SCLK PA5
+// #define TFT_MOSI PA7
+
+#define TFT_CS    40
+#define TFT_RST   39
+#define TFT_DC    38
+
+#define TFT_SCLK 42
+#define TFT_MOSI 44
+
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 
@@ -50,8 +65,14 @@ void setup(void) {
   tft.initR(INITR_BLACKTAB);
 
 
+  data[0].camNum = 1;
+  data[1].camNum = 2;
+  data[2].camNum = 3;
+  data[3].camNum = 4;
+
   data[0].tally = program;
   data[2].tally = preview;
+
 
   updateScreen();
 }
@@ -59,20 +80,28 @@ void setup(void) {
 void loop() {
 
   if (digitalRead(button1Pin) == LOW){
-    currentCam = 0;
-    updateScreen();
+    if (currentCam != 0){
+      currentCam = 0;
+      updateScreen();
+    }
   }
   else if (digitalRead(button2Pin) == LOW){
-    currentCam = 1;
-    updateScreen();
+    if (currentCam != 1){
+      currentCam = 1;
+      updateScreen();
+    }
   }
   else if (digitalRead(button3Pin) == LOW){
-    currentCam = 2;
-    updateScreen();
+    if (currentCam != 2){
+      currentCam = 2;
+      updateScreen();
+    }
   }
   else if (digitalRead(button4Pin) == LOW){
-    currentCam = 3;
-    updateScreen();
+    if (currentCam != 3){
+      currentCam = 3;
+      updateScreen();
+    }
   }
 
 }
@@ -129,13 +158,27 @@ void updateScreen() {
   const int tallyPos = 90;
 
   if (data[currentCam].tally == none){
+    tft.setCursor(54, 115);
+    tft.setTextSize(4);
+    tft.setTextColor(ST7735_WHITE);
+    tft.print(currentCam + 1);
   }
   else if (data[currentCam].tally == preview){
     tft.fillRect(0, tallyPos, 128, 2, ST7735_WHITE);
     tft.fillRect(0, tallyPos + 2, 128, 160-(tallyPos + 2), ST7735_GREEN);
+
+    tft.setCursor(56, 115);
+    tft.setTextSize(3);
+    tft.setTextColor(ST7735_BLACK);
+    tft.print(currentCam + 1);
   }
   else if (data[currentCam].tally == program){
     tft.fillRect(0, tallyPos, 128, 2, ST7735_WHITE);
     tft.fillRect(0, tallyPos + 2, 128, 160-(tallyPos + 2), ST7735_RED);
+
+    tft.setCursor(56, 115);
+    tft.setTextSize(3);
+    tft.setTextColor(ST7735_BLACK);
+    tft.print(currentCam + 1);
   }
 }
