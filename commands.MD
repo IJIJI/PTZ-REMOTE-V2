@@ -78,6 +78,7 @@ The camera number being adressed. Value from 0 to 254.
 |_setCoords_      |  0-254 |          7         |   xPosA   |  xPosB |  yPosA |  yPosB |  zPosA |  zPosB |  aPosA |  aPosB |        |        |         | (camNum - Data10) % 256 |   255 (0xFF)   |    :heavy_check_mark:    |
 |_callError_      |  0-254 |          8         |  errorNum |        |        |        |        |        |        |        |        |        |         | (camNum - Data10) % 256 |   255 (0xFF)   |    :heavy_check_mark:    |
 |_setLimit_       |  0-254 |          9         | limitType |        |        |        |        |        |        |        |        |        |         | (camNum - Data10) % 256 |   255 (0xFF)   | :heavy_multiplication_x: |
+|_home_           |  0-254 |         10         |           |        |        |        |        |        |        |        |        |        |         | (camNum - Data10) % 256 |   255 (0xFF)   | :heavy_multiplication_x: |
 
 </br>
 
@@ -106,7 +107,7 @@ The terminator byte allways is 0xFF or 255.
 
 ### **joyUpdate (1):**
 Moves the head. joyX/Y/Z/A, are speed values. The correct formatting is 1-254, with 127 being the middle.
-This command should be repeated at least every 200ms for consistent movement. After 500ms without update the head will halt movement.
+This command should be repeated at least every 200ms for consistent movement. After 500ms without update the head will halt movement. This should also take dropped packages in to consideration. If a package is dropped the repeat time will be double (or in bad circumstances more). A good rule of thumb should be that twice the repeat time should be less than th 500ms.
 
 ### **focus (2):**
 WIP
