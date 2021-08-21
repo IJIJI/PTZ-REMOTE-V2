@@ -181,7 +181,7 @@ void loop() {
 
 
 
-  if (data.keypadButton[10].state == Pressed || data.keypadButton[10].state == Hold){ //TODO check if num 10 is the correct button.
+  if (data.keypadButton[11].state == Pressed || data.keypadButton[11].state == Hold){ 
 
     for (int x = 0; x < 10; x++){
       if (data.keypadButton[x].state == Pressed && data.keypadButton[x].stateLast != Pressed){
