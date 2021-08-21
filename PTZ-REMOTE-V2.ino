@@ -414,28 +414,28 @@ uint8_t remove255(uint8_t inVal){
   return inVal;
 }
 
-void sendCommandRS(uint8_t camNum, uint8_t command[11]){
+void sendCommandRS(uint8_t camNum, uint8_t command[]){
 
   uint8_t commandLength = sizeof(command) / sizeof(command[0]);
   if (commandLength > 11)
-    commandLength = 12;
+    commandLength = 11;
   
   uint8_t message[15];
   
   message[0] = remove255(camNum);
-  int totalMessage = message[0];
+  uint16_t totalMessage = message[0];
   
-  for (int x = 0; x < commandLength; x++){
+  for (int x = 0; x <= commandLength; x++){
     message[x+1] = remove255(command[x]);
     totalMessage += command[x];
   }
 
-  message[13] = remove255(totalMessage % 256);
-  message[14] = 0xFF;
+  message[12] = remove255(totalMessage % 256);
+  message[13] = 0xFF;
 
 
 
-  Serial.write(message, 15);
+  Serial.write(message, 14);
 
 }
 
