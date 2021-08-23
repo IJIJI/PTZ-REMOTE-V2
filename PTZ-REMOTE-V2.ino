@@ -19,19 +19,19 @@
 
 // !
 
-#define joyXPin 7 //* Analog Pin
-#define joyYPin 6 //* Analog Pin
-#define joyZPin 5 //* Analog Pin
+#define joyXPin PA1 //* Analog Pin
+#define joyYPin PA2 //* Analog Pin
+#define joyZPin PA3 //* Analog Pin
 
-#define camSelect1Pin 8
-#define camSelect2Pin 9
-#define camSelect3Pin 10
-#define camSelect4Pin 11
+#define camSelect1Pin PB12
+#define camSelect2Pin PB13
+#define camSelect3Pin PB14
+#define camSelect4Pin PB15
 
-#define midSelect1Pin 12
-#define midSelect2Pin 13
-#define midSelect3Pin 14
-#define midSelect4Pin 15
+#define midSelect1Pin PA11
+#define midSelect2Pin PA12
+#define midSelect3Pin PA15
+#define midSelect4Pin PB3
 
 //!
 
@@ -139,8 +139,8 @@ void setup() {
 
 void loop() {
 
-  data = readInputButtons(data);
-  data = readInputJoystick(data);
+  data = readInputButtons(data);  // TODO convert to pointer
+  data = readInputJoystick(data); // TODO convert to pointer
 
 // !
 
