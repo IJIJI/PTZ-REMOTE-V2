@@ -23,9 +23,9 @@
 #define joyYPin PA2 //* Analog Pin
 #define joyZPin PA3 //* Analog Pin
 
-#define camSelect1Pin PB12
+#define camSelect1Pin PB14
 #define camSelect2Pin PB13
-#define camSelect3Pin PB14
+#define camSelect3Pin PB12
 #define camSelect4Pin PB15
 
 #define midSelect1Pin PA11
@@ -47,8 +47,8 @@ char keys[ROWS][COLS] = {
   {'*','0','#'}
 };
 
-uint8_t rowPins[ROWS] = {16, 17, 18, 19}; //connect to the row pinouts of the keypad
-uint8_t colPins[COLS] = {20, 21, 22}; //connect to the column pinouts of the keypad
+uint8_t rowPins[ROWS] = {PC14, PC15, PB0, PB1}; //connect to the row pinouts of the keypad
+uint8_t colPins[COLS] = {PB10, PB8,PB9}; //connect to the column pinouts of the keypad
 
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
