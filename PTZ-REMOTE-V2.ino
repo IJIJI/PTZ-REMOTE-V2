@@ -431,6 +431,7 @@ void sendCommandRS(uint8_t camNum, uint8_t command[]){
   }
 
   message[12] = remove255(totalMessage % 256);
+  message[12] = totalMessage % 255; //checksum
   message[13] = 0xFF;
 
 
