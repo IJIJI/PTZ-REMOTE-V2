@@ -216,29 +216,49 @@ void loop() {
 
   if (data.keypadButton[11].state == Pressed || data.keypadButton[11].state == Hold){ 
 
-    for (int x = 0; x < 10; x++){
-      if (data.keypadButton[x].state == Pressed && data.keypadButton[x].stateLast != Pressed){
+    if (data.keypadButton[9].state == Pressed && data.keypadButton[9].stateLast != Pressed){
 
-        uint8_t sendData[] = {writePosCommand, x + 1};
-        for (int x = 0; x < sendSingleCommands; x++){
-          sendCommandRS(data.camData[data.currentCam].camNum, sendData );
+      uint8_t sendData[] = {setZeroCommand};
+      for (int x = 0; x < sendSingleCommands; x++){
+        sendCommandRS(data.camData[data.currentCam].camNum, sendData );
+      }
+    }
+    else{
+
+      for (int x = 0; x < 9; x++){
+        if (data.keypadButton[x].state == Pressed && data.keypadButton[x].stateLast != Pressed){
+
+          uint8_t sendData[] = {writePosCommand, x + 1};
+          for (int x = 0; x < sendSingleCommands; x++){
+            sendCommandRS(data.camData[data.currentCam].camNum, sendData );
+          }
+
+          break;
         }
-
-        break;
       }
     }
   }
   else{
 
-    for (int x = 0; x < 10; x++){
-      if (data.keypadButton[x].state == Pressed && data.keypadButton[x].stateLast != Pressed){
+    if (data.keypadButton[9].state == Pressed && data.keypadButton[9].stateLast != Pressed){
 
-        uint8_t sendData[] = {callPosCommand, x + 1};
-        for (int x = 0; x < sendSingleCommands; x++){
-          sendCommandRS(data.camData[data.currentCam].camNum, sendData );
+      uint8_t sendData[] = {callPosCommand, 0};
+      for (int x = 0; x < sendSingleCommands; x++){
+        sendCommandRS(data.camData[data.currentCam].camNum, sendData );
+      }
+    }
+    else{
+
+      for (int x = 0; x < 10; x++){
+        if (data.keypadButton[x].state == Pressed && data.keypadButton[x].stateLast != Pressed){
+
+          uint8_t sendData[] = {callPosCommand, x + 1};
+          for (int x = 0; x < sendSingleCommands; x++){
+            sendCommandRS(data.camData[data.currentCam].camNum, sendData );
+          }
+
+          break;
         }
-
-        break;
       }
     }
   }
