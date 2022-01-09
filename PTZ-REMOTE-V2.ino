@@ -5,6 +5,8 @@
 
 #define joyXdeadZone 130
 #define joyYdeadZone 130
+// #define joyXdeadZone 60
+// #define joyYdeadZone 60
 #define joyZdeadZone 400
 // #define joyAdeadZone 20
 
@@ -18,6 +20,9 @@
 #define sendInterval 30 //todo test with different values
 #define sendAfterCenter 3
 #define sendSingleCommands 3
+
+#define accelCurve 5.5 // value 0 - 9, 0 being tho most curved and 9 the most linear.
+
 
 // !
 
@@ -102,19 +107,10 @@ struct dataPackage {
 
   camDataStruct camData[4];
 
-  // uint8_t joyX = 127;
-  // uint8_t joyY = 127;
-  // uint8_t joyZ = 127;
-  // uint8_t lastJoyX = 127;
-  // uint8_t lastJoyY = 127;
-  // uint8_t lastJoyZ = 127;
-
   joystickStateStruct joy[3];
   unsigned long lastCenter = millis();
 
-  // modes mode = normal;
   // uint8_t speed = 1;
-
 
   // buttonState keypadButton[12] = {Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle}; // Button formatting = none:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 0:10, *:11, #:12
   // buttonState keypadButtonLast[12] = {Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle}; // Button formatting = none:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 0:10, *:11, #:12
@@ -159,11 +155,6 @@ void setup() {
 }
 
 void loop() {
-
-  // Serial1.println("0xFF");
-  // uint8_t arraytest[] = {255, 255, 255, 255, 0x0a};
-  // sendCommandRS(1, arraytest);
-  // Serial1.write(arraytest, 5);
 
   data = readInputButtons(data);  // TODO convert to pointer
   data = readInputJoystick(data); // TODO convert to pointer
@@ -404,24 +395,21 @@ dataPackage readInputJoystick(dataPackage inData){
   #ifdef joyXPin
     if (analogRead(joyXPin) < 511 - joyXdeadZone){
       inData.joy[0].pos = map(analogRead(joyXPin), 0, 511 - joyXdeadZone, 1 , 127);
-      // data.joyX = map(analogRead(joyXPin), 0, 1023, 255 , 0);
-      // inData.joy[0].pos = cubicCurve(inData.joy[0].pos);
     }
     else if (analogRead(joyXPin) > 512 + joyXdeadZone){
 
       inData.joy[0].pos = map(analogRead(joyXPin), 512 + joyXdeadZone, 1023, 127 , 254);
-      // inData.joy[0].pos = cubicCurve(inData.joy[0].pos);
     }
     else{
       inData.joy[0].pos = 127;
     }
+    inData.joy[0].pos = retailCurve(inData.joy[0].pos);
 
   #endif
 
   #ifdef joyYPin
     if (analogRead(joyYPin) < 511 - joyYdeadZone){
       inData.joy[1].pos = map(analogRead(joyYPin), 0, 511 - joyYdeadZone, 1 , 127);
-      // data.joyY = map(analogRead(joyYPin), 0, 1023, 255 , 0);
     }
     else if (analogRead(joyYPin) > 512 + joyYdeadZone){
       inData.joy[1].pos = map(analogRead(joyYPin), 512 + joyYdeadZone, 1023, 127 , 254);
@@ -429,21 +417,21 @@ dataPackage readInputJoystick(dataPackage inData){
     else{
       inData.joy[1].pos = 127;
     }
+    inData.joy[1].pos = retailCurve(inData.joy[1].pos);
 
   #endif
 
   #ifdef joyZPin
     if (analogRead(joyZPin) < 465 - joyZdeadZone){
       inData.joy[2].pos = map(analogRead(joyZPin), 0, 511 - joyZdeadZone, 1 , 127);
-      // data.joyZ = map(analogRead(joyZPin), 0, 1023, 255 , 0);
     }
     else if (analogRead(joyZPin) > 465 + joyZdeadZone){
       inData.joy[2].pos = map(analogRead(joyZPin), 512 + joyZdeadZone, 1024, 127 , 254);
-      // data.joyZ = analogRead(joyZPin);
     }
     else{
       inData.joy[2].pos = 127;
     }
+    inData.joy[2].pos = retailCurve(inData.joy[2].pos);
 
   #endif
 
@@ -478,13 +466,13 @@ void sendCommandRS(uint8_t camNum, uint8_t command[]){
     message[x+1] = remove255(command[x]);
     totalMessage += command[x];
   }
-  for (int x = commandLength + 1; x < 12; x++){ //TODO CHECK ZIS
+  for (int x = commandLength + 1; x < 12; x++){ //TODO CHECK ZIS cus command is not long enough
     message[x+1] = 0; 
   }
 
   message[12] = totalMessage % 255; //checksum
   message[13] = 0xFF;
-  // message[13] = 0x0a;
+
 
 
   lastSend = millis();
@@ -492,3 +480,21 @@ void sendCommandRS(uint8_t camNum, uint8_t command[]){
 
 }
 
+
+
+uint8_t retailCurve(uint8_t inVal){
+  
+  double inValFloat = mapfloat(inVal, 0, 255, -1, 1);
+  // double inValFloat = (inVal - 127.0) / 127.0;
+
+  double outValFloat = ( inValFloat *(accelCurve/9.0)+( pow(inValFloat, 5.0 ))*(9.0-accelCurve)/9.0 );
+  // double outValFloat = inValFloat;
+
+  return mapfloat(outValFloat, -1, 1, 0, 255);
+  
+}
+
+double mapfloat(double x, double in_min, double in_max, double out_min, double out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
