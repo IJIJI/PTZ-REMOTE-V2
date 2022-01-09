@@ -1,0 +1,17 @@
+   Nano  STM
+1a D7 R2 PB9
+2a D6 R3 PB8
+3b A2 C3 PB10
+4a D5 R4 PB1
+5b A0 C1 PB0
+6a D8 R1 PC15
+7b A1 C2 PC14
+
+
+R1 -> pin 6 -> PC15
+R2 -> pin 1 -> PB9
+R3 -> pin 2 -> PB8
+R4 -> pin 4 -> PB1
+C1 -> pin 5 -> PB0
+C2 -> pin 7 -> PC14
+C3 -> pin 3 -> PB10
