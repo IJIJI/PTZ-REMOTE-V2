@@ -1,0 +1,9 @@
+Left to right from the top (display side)
+1 - GND - GND		- GND
+2 - VDD - 5V		- 5V
+3 - SCL - SCLK		- 
+4 - SDA - MOSI		- 
+5 - RST - RESET		- 
+6 - DC  - MISO		- 
+7 - CS  - CS		- 
+8 - BLK - BACKLIGHT 3V3	- 3V3
