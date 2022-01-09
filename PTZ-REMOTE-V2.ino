@@ -3,9 +3,9 @@
 #include "Arduino.h"
 #include "commands.h"
 
-#define joyXdeadZone 100
-#define joyYdeadZone 100
-#define joyZdeadZone 100
+#define joyXdeadZone 130
+#define joyYdeadZone 130
+#define joyZdeadZone 400
 // #define joyAdeadZone 20
 
 #define camNum1 1
@@ -15,23 +15,25 @@
 
 #define buttonHoldTime 2000
 
-#define sendInterval 150
+#define sendInterval 30 //todo test with different values
+#define sendAfterCenter 3
+#define sendSingleCommands 3
 
 // !
 
 #define joyXPin PA1 //* Analog Pin
 #define joyYPin PA2 //* Analog Pin
-#define joyZPin PA3 //* Analog Pin
+// #define joyZPin PA3 //* Analog Pin
 
-#define camSelect1Pin PB14
-#define camSelect2Pin PB13
-#define camSelect3Pin PB12
-#define camSelect4Pin PB15
+#define camSelect1Pin PB15
+#define camSelect2Pin PB12
+#define camSelect3Pin PB13
+#define camSelect4Pin PB14
 
 #define midSelect1Pin PA11
-#define midSelect2Pin PA12
-#define midSelect3Pin PA15
-#define midSelect4Pin PB3
+#define midSelect2Pin PA15
+#define midSelect3Pin PB3
+#define midSelect4Pin PB4
 
 //!
 
@@ -47,8 +49,16 @@ char keys[ROWS][COLS] = {
   {'*','0','#'}
 };
 
-uint8_t rowPins[ROWS] = {PC14, PC15, PB0, PB1}; //connect to the row pinouts of the keypad
-uint8_t colPins[COLS] = {PB10, PB8,PB9}; //connect to the column pinouts of the keypad
+uint8_t rowPins[ROWS] = {PC15, PB9, PB8, PB1}; //connect to the row pinouts of the keypad
+uint8_t colPins[COLS] = {PB0, PC14,PB10}; //connect to the column pinouts of the keypad
+
+// R1 -> pin 6 -> PC15
+// R2 -> pin 1 -> PB9
+// R3 -> pin 2 -> PB8
+// R4 -> pin 4 -> PB1
+// C1 -> pin 5 -> PB0
+// C2 -> pin 7 -> PC14
+// C3 -> pin 3 -> PB10
 
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
@@ -100,6 +110,7 @@ struct dataPackage {
   // uint8_t lastJoyZ = 127;
 
   joystickStateStruct joy[3];
+  unsigned long lastCenter = millis();
 
   // modes mode = normal;
   // uint8_t speed = 1;
@@ -121,6 +132,16 @@ unsigned long lastSend;
 
 void setup() {
 
+  pinMode(camSelect1Pin, INPUT_PULLUP);
+  pinMode(camSelect2Pin, INPUT_PULLUP);
+  pinMode(camSelect3Pin, INPUT_PULLUP);
+  pinMode(camSelect4Pin, INPUT_PULLUP);
+
+  pinMode(midSelect1Pin, INPUT_PULLUP);
+  pinMode(midSelect2Pin, INPUT_PULLUP);
+  pinMode(midSelect3Pin, INPUT_PULLUP);
+  pinMode(midSelect4Pin, INPUT_PULLUP);
+
   data.camData[0].camNum = camNum1;
   data.camData[1].camNum = camNum2;
   data.camData[2].camNum = camNum3;
@@ -131,13 +152,18 @@ void setup() {
 
   keypad.setHoldTime(buttonHoldTime);
 
-  Serial.begin(115200);
+  Serial1.begin(115200);
 
   lastSend = millis();
 
 }
 
 void loop() {
+
+  // Serial1.println("0xFF");
+  // uint8_t arraytest[] = {255, 255, 255, 255, 0x0a};
+  // sendCommandRS(1, arraytest);
+  // Serial1.write(arraytest, 5);
 
   data = readInputButtons(data);  // TODO convert to pointer
   data = readInputJoystick(data); // TODO convert to pointer
@@ -152,27 +178,43 @@ void loop() {
     
     data.joy[2].pos = 1;
   }
+  else{
+    data.joy[2].pos = 127;
+  }
 
 // !
+  if(
+    data.joy[0].lastPos == 127 && data.joy[0].pos == 127 && data.joy[0].pos == data.joy[0].lastPos &&
+    data.joy[1].lastPos == 127 && data.joy[0].pos == 127 && data.joy[1].pos == data.joy[1].lastPos &&
+    data.joy[2].lastPos == 127 && data.joy[0].pos == 127 && data.joy[2].pos == data.joy[2].lastPos){
 
-  for (int x = 0; x < 4; x++){
+    for (int x = 0; x < 4; x++){
 
-    if (data.camSelectButton[x].state == Pressed && data.camSelectButton[x].stateLast != Pressed){
+      if (data.camSelectButton[x].state == Pressed && data.camSelectButton[x].stateLast != Pressed){
 
-      data.currentCam = x;
+        data.currentCam = x;
 
-      break;
+        break;
+      }
+
     }
-
   }
 
 // !
 
-  if (data.joy[0].pos != 127 || data.joy[0].pos != data.joy[0].lastPos ||
-      data.joy[1].pos != 127 || data.joy[1].pos != data.joy[1].lastPos ||
-      data.joy[2].pos != 127 || data.joy[2].pos != data.joy[2].lastPos ){
+  if (data.joy[0].lastPos != 127 || data.joy[0].pos != 127 || data.joy[0].pos != data.joy[0].lastPos ||
+      data.joy[1].lastPos != 127 || data.joy[0].pos != 127 || data.joy[1].pos != data.joy[1].lastPos ||
+      data.joy[2].lastPos != 127 || data.joy[0].pos != 127 || data.joy[2].pos != data.joy[2].lastPos ||
+      data.lastCenter < sendAfterCenter){
     
     if (lastSend + sendInterval < millis()){
+
+      if (data.joy[0].pos == 127 && data.joy[1].pos == 127 && data.joy[2].pos == 127){
+        data.lastCenter++;
+      }
+      else{
+        data.lastCenter = 0;
+      }
 
       uint8_t sendData[5] = {joyUpdateCommand, data.joy[0].pos, data.joy[1].pos, data.joy[2].pos, 127};
       sendCommandRS(data.camData[data.currentCam].camNum, sendData );
@@ -187,7 +229,9 @@ void loop() {
       if (data.keypadButton[x].state == Pressed && data.keypadButton[x].stateLast != Pressed){
 
         uint8_t sendData[] = {writePosCommand, x + 1};
-        sendCommandRS(data.camData[data.currentCam].camNum, sendData );
+        for (int x = 0; x < sendSingleCommands; x++){
+          sendCommandRS(data.camData[data.currentCam].camNum, sendData );
+        }
 
         break;
       }
@@ -199,7 +243,9 @@ void loop() {
       if (data.keypadButton[x].state == Pressed && data.keypadButton[x].stateLast != Pressed){
 
         uint8_t sendData[] = {callPosCommand, x + 1};
-        sendCommandRS(data.camData[data.currentCam].camNum, sendData );
+        for (int x = 0; x < sendSingleCommands; x++){
+          sendCommandRS(data.camData[data.currentCam].camNum, sendData );
+        }
 
         break;
       }
@@ -309,15 +355,15 @@ dataPackage readInputButtons(dataPackage inData){ // add Pointer to keyboard fun
 
 // !
 
-  readButton(camSelect1Pin, data.camSelectButton[1]);
-  readButton(camSelect2Pin, data.camSelectButton[2]);
-  readButton(camSelect3Pin, data.camSelectButton[3]);
-  readButton(camSelect4Pin, data.camSelectButton[4]);
+  inData.camSelectButton[0] = readButton(camSelect1Pin, data.camSelectButton[1]);
+  inData.camSelectButton[1] = readButton(camSelect2Pin, data.camSelectButton[2]);
+  inData.camSelectButton[2] = readButton(camSelect3Pin, data.camSelectButton[3]);
+  inData.camSelectButton[3] = readButton(camSelect4Pin, data.camSelectButton[4]);
 
-  readButton(midSelect1Pin, data.midSelectButton[1]);
-  readButton(midSelect2Pin, data.midSelectButton[2]);
-  readButton(midSelect3Pin, data.midSelectButton[3]);
-  readButton(midSelect4Pin, data.midSelectButton[4]);
+  inData.midSelectButton[0] = readButton(midSelect1Pin, data.midSelectButton[1]);
+  inData.midSelectButton[1] = readButton(midSelect2Pin, data.midSelectButton[2]);
+  inData.midSelectButton[2] = readButton(midSelect3Pin, data.midSelectButton[3]);
+  inData.midSelectButton[3] = readButton(midSelect4Pin, data.midSelectButton[4]);
 
 // !
 
@@ -326,7 +372,7 @@ dataPackage readInputButtons(dataPackage inData){ // add Pointer to keyboard fun
 
 buttonStateStruct readButton(uint16_t pin, buttonStateStruct inButton){
 
-  if(digitalRead(pin)){
+  if(digitalRead(pin) == LOW){
     
     if (inButton.state == Pressed && inButton.lastPress + buttonHoldTime < millis()){
       inButton.state = Hold;
@@ -357,43 +403,46 @@ dataPackage readInputJoystick(dataPackage inData){
 
   #ifdef joyXPin
     if (analogRead(joyXPin) < 511 - joyXdeadZone){
-      data.joy[0].pos = map(analogRead(joyXPin), 0, 511 - joyXdeadZone, 1 , 127);
+      inData.joy[0].pos = map(analogRead(joyXPin), 0, 511 - joyXdeadZone, 1 , 127);
       // data.joyX = map(analogRead(joyXPin), 0, 1023, 255 , 0);
+      // inData.joy[0].pos = cubicCurve(inData.joy[0].pos);
     }
     else if (analogRead(joyXPin) > 512 + joyXdeadZone){
-      data.joy[0].pos = map(analogRead(joyXPin), 512 + joyXdeadZone, 1023, 127 , 254);
+
+      inData.joy[0].pos = map(analogRead(joyXPin), 512 + joyXdeadZone, 1023, 127 , 254);
+      // inData.joy[0].pos = cubicCurve(inData.joy[0].pos);
     }
     else{
-      data.joy[0].pos = 127;
+      inData.joy[0].pos = 127;
     }
 
   #endif
 
   #ifdef joyYPin
     if (analogRead(joyYPin) < 511 - joyYdeadZone){
-      data.joy[1].pos = map(analogRead(joyYPin), 0, 511 - joyYdeadZone, 1 , 127);
+      inData.joy[1].pos = map(analogRead(joyYPin), 0, 511 - joyYdeadZone, 1 , 127);
       // data.joyY = map(analogRead(joyYPin), 0, 1023, 255 , 0);
     }
     else if (analogRead(joyYPin) > 512 + joyYdeadZone){
-      data.joy[1].pos = map(analogRead(joyYPin), 512 + joyYdeadZone, 1023, 127 , 254);
+      inData.joy[1].pos = map(analogRead(joyYPin), 512 + joyYdeadZone, 1023, 127 , 254);
     }
     else{
-      data.joy[1].pos = 127;
+      inData.joy[1].pos = 127;
     }
 
   #endif
 
   #ifdef joyZPin
     if (analogRead(joyZPin) < 465 - joyZdeadZone){
-      data.joy[2].pos = map(analogRead(joyZPin), 0, 511 - joyZdeadZone, 1 , 127);
+      inData.joy[2].pos = map(analogRead(joyZPin), 0, 511 - joyZdeadZone, 1 , 127);
       // data.joyZ = map(analogRead(joyZPin), 0, 1023, 255 , 0);
     }
     else if (analogRead(joyZPin) > 465 + joyZdeadZone){
-      data.joy[2].pos = map(analogRead(joyZPin), 512 + joyZdeadZone, 1024, 127 , 254);
+      inData.joy[2].pos = map(analogRead(joyZPin), 512 + joyZdeadZone, 1024, 127 , 254);
       // data.joyZ = analogRead(joyZPin);
     }
     else{
-      data.joy[2].pos = 127;
+      inData.joy[2].pos = 127;
     }
 
   #endif
@@ -429,14 +478,17 @@ void sendCommandRS(uint8_t camNum, uint8_t command[]){
     message[x+1] = remove255(command[x]);
     totalMessage += command[x];
   }
+  for (int x = commandLength + 1; x < 12; x++){ //TODO CHECK ZIS
+    message[x+1] = 0; 
+  }
 
-  message[12] = remove255(totalMessage % 256);
   message[12] = totalMessage % 255; //checksum
   message[13] = 0xFF;
+  // message[13] = 0x0a;
 
 
-
-  Serial.write(message, 14);
+  lastSend = millis();
+  Serial1.write(message, 14);
 
 }
 
