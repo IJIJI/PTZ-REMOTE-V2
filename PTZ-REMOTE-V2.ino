@@ -7,6 +7,8 @@
 #define joyYdeadZone 130
 // #define joyXdeadZone 60
 // #define joyYdeadZone 60
+#define joyXdeadZone 250  //! testing
+#define joyYdeadZone 375  //! testing
 #define joyZdeadZone 400
 // #define joyAdeadZone 20
 
@@ -30,10 +32,15 @@
 #define joyYPin PA2 //* Analog Pin
 // #define joyZPin PA3 //* Analog Pin
 
-#define camSelect1Pin PB15
-#define camSelect2Pin PB12
-#define camSelect3Pin PB13
-#define camSelect4Pin PB14
+// #define camSelect1Pin PB15
+// #define camSelect2Pin PB12
+// #define camSelect3Pin PB13
+// #define camSelect4Pin PB14
+
+#define camSelect1Pin PB12
+#define camSelect2Pin PB13
+#define camSelect3Pin PB14
+#define camSelect4Pin PB15
 
 #define midSelect1Pin PA11
 #define midSelect2Pin PA15
