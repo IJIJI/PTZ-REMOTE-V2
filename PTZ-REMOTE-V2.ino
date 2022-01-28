@@ -22,19 +22,19 @@
 // #define TFT_SCLK 13
 // #define TFT_MOSI 11
 
-// #define TFT_CS    PA3
-// #define TFT_RST   PA2
-// #define TFT_DC    PA1
+#define TFT_CS    PA3
+#define TFT_RST   PA2
+#define TFT_DC    PA1
 
-// #define TFT_SCLK PA5
-// #define TFT_MOSI PA7
+#define TFT_SCLK  PA5
+#define TFT_MOSI  PA7
 
-#define TFT_CS    40
-#define TFT_RST   39
-#define TFT_DC    38
+// #define TFT_CS    40
+// #define TFT_RST   39
+// #define TFT_DC    38
 
-#define TFT_SCLK 42
-#define TFT_MOSI 44
+// #define TFT_SCLK 42
+// #define TFT_MOSI 44
 
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
